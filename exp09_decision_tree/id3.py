@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.tree import DecisionTreeClassifier, plot_tree
+from ucimlrepo import fetch_ucirepo
 
-df = pd.read_csv("OnlineRetail.csv", encoding="ISO-8859-1")
+online_retail = fetch_ucirepo(id=352)
+
+df = online_retail.data.original.copy()
 
 print("Original shape:", df.shape)
 
