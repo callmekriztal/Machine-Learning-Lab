@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
@@ -8,15 +7,22 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from ucimlrepo import fetch_ucirepo
 
 online_retail = fetch_ucirepo(id=352)
-
 df = online_retail.data.original.copy()
 
 print("Original shape:", df.shape)
 
-df = df.dropna(subset=["CustomerID"])
-df = df[~df["InvoiceNo"].astype(str).str.startswith("C")]
+df = df.sample(n=10000, random_state=42)
 
-df = df[(df["Quantity"] > 0) & (df["UnitPrice"] > 0)]
+df = df.dropna(subset=["CustomerID"])
+
+df = df[
+    ~df["InvoiceNo"].astype(str).str.startswith("C")
+]
+
+df = df[
+    (df["Quantity"] > 0) &
+    (df["UnitPrice"] > 0)
+]
 
 df["TotalAmount"] = df["Quantity"] * df["UnitPrice"]
 
@@ -35,16 +41,12 @@ customer_data["PurchaseFrequency"] = (
     customer_data["NumInvoices"].max()
 )
 
-print("\nCustomer data:")
-
 customer_data["Segment"] = pd.qcut(
     customer_data["TotalSpent"],
-    q=3,
-    labels=["Low", "Medium", "High"]
+    3,
+    labels=["Low", "Medium", "High"],
+    duplicates="drop"
 )
-
-print("\nSegment distribution:")
-print(customer_data["Segment"].value_counts())
 
 features = [
     "TotalQuantity",
@@ -65,62 +67,47 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
-id3_model = DecisionTreeClassifier(
+model = DecisionTreeClassifier(
     criterion="entropy",
     max_depth=4,
     random_state=42
 )
 
-id3_model.fit(X_train, y_train)
+model.fit(X_train, y_train)
 
-y_pred = id3_model.predict(X_test)
 
-accuracy = accuracy_score(y_test, y_pred)
+y_pred = model.predict(X_test)
 
-print("\nAccuracy:", accuracy)
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
 
 print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
 
-plt.figure(figsize=(20, 10))
+plt.figure(figsize=(14, 7))
 
 plot_tree(
-    id3_model,
+    model,
     feature_names=features,
     class_names=["Low", "Medium", "High"],
-    #filled=True,
-    rounded=True,
-    fontsize=10,
-    impurity=False
+    filled=False,       # NO COLORS
+    rounded=False,      # SIMPLE BOXES
+    impurity=False,     # REMOVE ENTROPY/GINI
+    proportion=False,
+    precision=2,
+    fontsize=8
 )
 
-plt.title("ID3 Decision Tree for Customer Segmentation")
+plt.title("ID3 Decision Tree")
+plt.tight_layout()
 plt.show()
 
 importance = pd.DataFrame({
     "Feature": features,
-    "Importance": id3_model.feature_importances_
-})
-
-importance = importance.sort_values(
-    by="Importance",
+    "Importance": model.feature_importances_
+}).sort_values(
+    "Importance",
     ascending=False
 )
 
 print("\nFeature Importance:")
 print(importance)
-
-
-plt.figure(figsize=(8, 5))
-
-plt.bar(
-    importance["Feature"],
-    importance["Importance"]
-)
-
-plt.xlabel("Features")
-plt.ylabel("Importance")
-plt.title("Feature Importance - ID3 Decision Tree")
-
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
