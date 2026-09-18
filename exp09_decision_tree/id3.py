@@ -6,27 +6,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 
-
-
 df = pd.read_csv("OnlineRetail.csv", encoding="ISO-8859-1")
 
-
 print("Original shape:", df.shape)
-#print(df.head())
-
 
 df = df.dropna(subset=["CustomerID"])
 df = df[~df["InvoiceNo"].astype(str).str.startswith("C")]
 
-
 df = df[(df["Quantity"] > 0) & (df["UnitPrice"] > 0)]
-
 
 df["TotalAmount"] = df["Quantity"] * df["UnitPrice"]
 
 print("After preprocessing:", df.shape)
-
-
 
 customer_data = df.groupby("CustomerID").agg(
     TotalSpent=("TotalAmount", "sum"),
@@ -36,15 +27,12 @@ customer_data = df.groupby("CustomerID").agg(
     AvgOrderValue=("TotalAmount", "mean")
 ).reset_index()
 
-
 customer_data["PurchaseFrequency"] = (
     customer_data["NumInvoices"] /
     customer_data["NumInvoices"].max()
 )
 
 print("\nCustomer data:")
-#print(customer_data.head())
-
 
 customer_data["Segment"] = pd.qcut(
     customer_data["TotalSpent"],
@@ -54,7 +42,6 @@ customer_data["Segment"] = pd.qcut(
 
 print("\nSegment distribution:")
 print(customer_data["Segment"].value_counts())
-
 
 features = [
     "TotalQuantity",
@@ -67,7 +54,6 @@ features = [
 X = customer_data[features]
 y = customer_data["Segment"]
 
-
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -75,7 +61,6 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42,
     stratify=y
 )
-
 
 id3_model = DecisionTreeClassifier(
     criterion="entropy",
@@ -85,9 +70,6 @@ id3_model = DecisionTreeClassifier(
 
 id3_model.fit(X_train, y_train)
 
-
-
-
 y_pred = id3_model.predict(X_test)
 
 accuracy = accuracy_score(y_test, y_pred)
@@ -95,8 +77,6 @@ accuracy = accuracy_score(y_test, y_pred)
 print("\nAccuracy:", accuracy)
 
 print("\nClassification Report:")
-#print(classification_report(y_test, y_pred))
-
 
 plt.figure(figsize=(20, 10))
 
@@ -112,11 +92,6 @@ plot_tree(
 
 plt.title("ID3 Decision Tree for Customer Segmentation")
 plt.show()
-
-
-# --------------------------------------------------
-# 10. FEATURE IMPORTANCE
-# --------------------------------------------------
 
 importance = pd.DataFrame({
     "Feature": features,
