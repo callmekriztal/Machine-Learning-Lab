@@ -29,12 +29,12 @@ def train_logistic(X, y, lam=0, penalty=None, learning_rate=0.1, epochs=1000):
     theta0 = 0
 
     for epoch in range(epochs):
-        z = np.dot(X, theta1) + theta0
+        z = X @ theta1 + theta0
         y_hat = sigmoid(z)
 
         error = y_hat - y
 
-        d_theta1 = np.dot(X.T, error) / m
+        d_theta1 = (X.T @ error) / m
         d_theta0 = np.sum(error) / m
 
         if penalty == "l2":
@@ -49,7 +49,7 @@ def train_logistic(X, y, lam=0, penalty=None, learning_rate=0.1, epochs=1000):
     return theta1, theta0
 
 def accuracy(X, y, theta1, theta0):
-    y_hat = sigmoid(np.dot(X, theta1) + theta0)
+    y_hat = sigmoid((X @ theta1)+ theta0)
     predictions = (y_hat >= 0.5).astype(int)
     return np.mean(predictions == y)
 
