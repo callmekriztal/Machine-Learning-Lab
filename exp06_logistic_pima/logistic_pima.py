@@ -9,16 +9,9 @@ diabetes = fetch_openml(name='diabetes', version=1, as_frame=False)
 X = diabetes.data
 y = diabetes.target
 
-print(diabetes.DESCR)
-
 y = np.where(y == 'tested_positive', 1, 0)
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(X,y,test_size=0.2,random_state=42)
 
 def evaluate(y_true, y_pred):
     acc = accuracy_score(y_true,y_pred)

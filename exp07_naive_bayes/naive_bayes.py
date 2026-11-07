@@ -4,10 +4,7 @@ from sklearn.naive_bayes import MultinomialNB,BernoulliNB
 from sklearn.metrics import accuracy_score,f1_score
 from sklearn.feature_extraction.text import CountVectorizer
 
-news = fetch_20newsgroups(
-		subset='all',
-		remove=('headers','footers','quotes')
-	)
+news = fetch_20newsgroups(subset='all',remove=('headers','footers','quotes'))
 
 X = news.data
 y = news.target
@@ -21,7 +18,6 @@ X_test_counts = vectorizer.transform(X_test)
 
 mnb = MultinomialNB()
 mnb.fit(X_train_counts,y_train)
-
 mnb_pred = mnb.predict(X_test_counts)
 
 mnb_acc = accuracy_score(y_test,mnb_pred)
@@ -38,7 +34,6 @@ X_test_binary = binary_vectorizer.transform(X_test)
 
 bnb = BernoulliNB()
 bnb.fit(X_train_binary,y_train)
-
 bnb_pred = bnb.predict(X_test_binary)
 
 bnb_acc = accuracy_score(y_test,bnb_pred)

@@ -1,0 +1,14 @@
+Activation: logistic
+Accuracy: 93.65 %
+Training time: 21.69 seconds
+Iterations: 100
+
+Activation: relu
+Accuracy: 94.4 %
+Training time: 36.12 seconds
+Iterations: 100
+
+Activation: tanh
+Accuracy: 93.8 %
+Training time: 27.68 seconds
+Iterations: 100

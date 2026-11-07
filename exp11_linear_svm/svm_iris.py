@@ -20,7 +20,6 @@ X_test = scaler.transform(X_test)
 
 model = SVC(kernel="linear", C=1)
 model.fit(X_train, y_train)
-
 y_pred = model.predict(X_test)
 
 print("Accuracy:", accuracy_score(y_test, y_pred))

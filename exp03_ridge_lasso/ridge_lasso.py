@@ -1,77 +1,63 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.datasets import load_diabetes
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression,Ridge,RidgeCV,Lasso,LassoCV
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
 diabetes = load_diabetes()
-
 X = diabetes.data
 y = diabetes.target
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test)
+linear = LinearRegression()
+linear.fit(X_train, y_train)
+linear_pred = linear.predict(X_test)
 
-def evaluate(model, name):
-    model.fit(X_train_scaled, y_train)
-    y_pred = model.predict(X_test_scaled)
+ridge = Ridge(alpha=1.0)
+ridge.fit(X_train, y_train)
+ridge_pred = ridge.predict(X_test)
 
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
+ridge_cv = RidgeCV(alphas=[0.01, 0.1, 1, 10, 100], cv=5)
+ridge_cv.fit(X_train, y_train)
+ridgecv_pred = ridge_cv.predict(X_test)
 
-    print("\n", name)
-    print("MSE:", mse)
-    print("R-squared:", r2)
-    return mse
+lasso = Lasso(alpha=0.1)
+lasso.fit(X_train, y_train)
+lasso_pred = lasso.predict(X_test)
 
-linear_model = LinearRegression()
-linear_mse = evaluate(linear_model, "Linear Regression")
+lasso_cv = LassoCV(cv=5, random_state=42)
+lasso_cv.fit(X_train, y_train)
+lassocv_pred = lasso_cv.predict(X_test)
 
-ridge = Ridge()
+def evaluate(name, y_true, y_pred):
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
 
-ridge_params = { "alpha": [0.01, 0.1, 1, 10, 100] }
+    print(name,":")
+    print("MSE  :", mse)
+    print("RMSE :", rmse)
+    print("MAE  :", mae)
+    print("R²   :", r2)
 
-ridge_cv = GridSearchCV(
-    ridge,
-    ridge_params,
-    cv=5,
-    scoring="neg_mean_squared_error"
-)
-
-ridge_cv.fit(X_train_scaled, y_train)
-
-print("\nBest Ridge Alpha:", ridge_cv.best_params_["alpha"])
-
-ridge_model = ridge_cv.best_estimator_
-ridge_mse = evaluate(ridge_model, "Ridge Regression")
-
-lasso = Lasso(max_iter=10000)
-
-lasso_params = { "alpha": [0.001, 0.01, 0.1, 1, 10] }
-
-lasso_cv = GridSearchCV(
-    lasso,
-    lasso_params,
-    cv=5,
-    scoring="neg_mean_squared_error"
-)
-
-lasso_cv.fit(X_train_scaled, y_train)
-
-print("\nBest Lasso Alpha:", lasso_cv.best_params_["alpha"])
-
-lasso_model = lasso_cv.best_estimator_
-lasso_mse=evaluate(lasso_model, "Lasso Regression")
-
-if linear_mse < ridge_mse and linear_mse < lasso_mse:
-    print("Best Model: Linear Regression")
-elif ridge_mse < linear_mse and ridge_mse < lasso_mse:
-    print("Best Model: Ridge Regression")
-else:
-    print("Best Model: Lasso Regression")
+evaluate("Linear Regression", y_test, linear_pred)
+print()
+evaluate("Ridge Regression", y_test, ridge_pred)
+print("Alpha :", ridge.alpha)
+print()
+evaluate("Ridge Regression (CV)", y_test, ridgecv_pred)
+print("Best Alpha :", ridge_cv.alpha_)
+print()
+evaluate("Lasso Regression", y_test, lasso_pred)
+print("Alpha :", lasso.alpha)
+print()
+evaluate("Lasso Regression (CV)", y_test, lassocv_pred)
+print("Best Alpha :", lasso_cv.alpha_)
